@@ -1,54 +1,67 @@
-# Шаблон для выполнения тестового задания
+# Тестовое задание: сервис получения тарифов Wildberries и экспорта в Google Sheets
 
-## Описание
-Шаблон подготовлен для того, чтобы попробовать сократить трудоемкость выполнения тестового задания.
+## Настройка
 
-В шаблоне настоены контейнеры для `postgres` и приложения на `nodejs`.  
-Для взаимодействия с БД используется `knex.js`.  
-В контейнере `app` используется `build` для приложения на `ts`, но можно использовать и `js`.
+### 1. Клонирование и установка зависимостей
+```bash
+git clone <repository-url>
+cd btlz-wb-test
+npm install -y
+```
 
-Шаблон не является обязательным!\
-Можно использовать как есть или изменять на свой вкус.
+### 2. Настройка переменных окружения
+Скопируйте `example.env` в `.env`:
 
-Все настройки можно найти в файлах:
-- compose.yaml
-- dockerfile
-- package.json
-- tsconfig.json
-- src/config/env/env.ts
-- src/config/knex/knexfile.ts
+```bash
+cp example.env .env
+```
 
-## Команды:
+И заполните следующие переменные:
+- `WB_TOKEN`: Токен Wildberries API
+- `GOOGLE_SERVICE_ACCOUNT_EMAIL`: Email сервисного аккаунта Google
+- `GOOGLE_PRIVATE_KEY`: Приватный ключ сервисного аккаунта
+- `GOOGLE_SPREADSHEET_ID`: ID'шники Google Sheets документов для экспорта
 
-Запуск базы данных:
+
+## Запуск
+
+Полный запуск сервиса:
+
+```bash
+docker compose up --build
+```
+
+Запуск только базы данных:
+
 ```bash
 docker compose up -d --build postgres
 ```
 
-Для выполнения миграций и сидов не из контейнера:
+## Работа с базой данных
+
+Выполнение миграций:
+
 ```bash
 npm run knex:dev migrate latest
 ```
 
-```bash
-npm run knex:dev seed run
-```
-Также можно использовать и остальные команды (`migrate make <name>`,`migrate up`, `migrate down` и т.д.)
 
-Для запуска приложения в режиме разработки:
-```bash
-npm run dev
-```
+## Проверка работы
 
-Запуск проверки самого приложения:
+Логи приложения:
+
 ```bash
-docker compose up -d --build app
+docker compose logs -f app
 ```
 
-Для финальной проверки рекомендую:
+Проверка данных в БД:
+
 ```bash
-docker compose down --rmi local --volumes
-docker compose up --build
+docker compose exec postgres psql -U postgres -d postgres -c "SELECT COUNT(*) FROM tariffs;"
 ```
 
-PS: С наилучшими пожеланиями!
+## Архитектура
+- **WBService**: Получение данных из API Wildberries
+- **GoogleSheetsService**: Экспорт данных в Google Sheets
+- **TariffBoxService**: Работа с БД и координация экспорта
+- **node-cron**: Cron-задача для ежечасного получения данных

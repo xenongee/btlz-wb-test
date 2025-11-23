@@ -63,6 +63,7 @@ const knegConfigs: Record<typeof NODE_ENV, Knex.Config> = {
             stub: 'src/config/knex/seed.stub.js',
             directory: "./dist/postgres/seeds",
             extension: "js",
+            loadExtensions: ['.js'],
         },
     },
 };
